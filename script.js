@@ -66,8 +66,6 @@ class PuzzleState {
     }
     
     // Apply a move and return the new state
-    // CORRECTED: The movement logic was swapped; when moving "up", 
-    // the empty space moves up, but a tile moves down into the empty space
     applyMove(move) {
         const newTiles = [...this.tiles];
         const { row, col } = this.emptyPos;
@@ -131,8 +129,8 @@ class AlphaBetaSearch {
         this.nodesPruned = 0;
         updateStatistics(this.nodesExplored, this.nodesPruned);
         
-        // Reduced max depth to ensure we can find a solution for simpler puzzles quickly
-        await this.alphaBetaSearch(this.initialState, 0, 8, -Infinity, Infinity, true);
+        // Set max depth to 4 for simpler puzzle
+        await this.alphaBetaSearch(this.initialState, 0, 4, -Infinity, Infinity, true);
         
         if (this.solution) {
             traceSolution(this.solution);
@@ -293,7 +291,26 @@ async function visualizeNode(state, status) {
         const levelTitle = document.createElement('h3');
         levelTitle.textContent = `Depth ${state.depth}`;
         levelContainer.appendChild(levelTitle);
-        treeContainer.appendChild(levelContainer);
+        
+        // Insert at the appropriate position based on depth
+        const existingLevels = treeContainer.querySelectorAll('.tree-level');
+        if (existingLevels.length === 0) {
+            treeContainer.appendChild(levelContainer);
+        } else {
+            let inserted = false;
+            for (let i = 0; i < existingLevels.length; i++) {
+                const level = existingLevels[i];
+                const levelDepth = parseInt(level.id.split('-')[1]);
+                if (state.depth < levelDepth) {
+                    treeContainer.insertBefore(levelContainer, level);
+                    inserted = true;
+                    break;
+                }
+            }
+            if (!inserted) {
+                treeContainer.appendChild(levelContainer);
+            }
+        }
     }
     
     // Create node visualization
@@ -342,7 +359,33 @@ async function visualizeNode(state, status) {
     
     nodeElement.className = `tree-node ${status}`;
     
+    // Make sure the container expands as nodes are added
+    updateTreeContainer();
+    
     await sleep(100); // Brief pause to make the visualization more clear
+}
+
+function updateTreeContainer() {
+    const treeContainer = document.getElementById('treeVisualization');
+    const treeContainerRect = treeContainer.getBoundingClientRect();
+    
+    // Check if we need horizontal scrolling
+    const allNodes = treeContainer.querySelectorAll('.tree-node');
+    let maxRight = 0;
+    
+    allNodes.forEach(node => {
+        const nodeRect = node.getBoundingClientRect();
+        const nodeRightEdge = nodeRect.left + nodeRect.width - treeContainerRect.left;
+        maxRight = Math.max(maxRight, nodeRightEdge);
+    });
+    
+    // Add some padding
+    maxRight += 20;
+    
+    // Set the width if needed
+    if (maxRight > treeContainerRect.width) {
+        treeContainer.style.minWidth = `${maxRight}px`;
+    }
 }
 
 async function visualizeNodeValue(state, value) {
@@ -407,10 +450,9 @@ function sleep(ms) {
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
-    // Simpler puzzle that can be solved in 7-10 steps
-    // This is a common test case where the blank space is in the middle
-    // and only a few tiles are out of place
-    const initialTiles = [1, 3, 4, 8, 0, 2, 7, 6, 5];
+    // Simpler puzzle that can be solved in 2-3 moves
+    // This is a simple case where only tiles 8 and 0 are swapped
+    const initialTiles = [1, 2, 3, 4, 5, 6, 7, 0, 8];
     
     const initialState = new PuzzleState(initialTiles);
     const search = new AlphaBetaSearch(initialState);
@@ -426,6 +468,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('resetBtn').addEventListener('click', () => {
         search.reset();
         document.getElementById('treeVisualization').innerHTML = '';
+        document.getElementById('treeVisualization').style.minWidth = ''; // Reset width
         updateStatistics(0, 0);
         updateCurrentState(initialState);
         updateAlphaBeta(-Infinity, Infinity);
