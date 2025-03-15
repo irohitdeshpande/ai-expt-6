@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha-Beta Pruning Visualizer for 8-Puzzle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Alpha-Beta Pruning for 8-Puzzle</h1>
+        
+        <div class="controls">
+            <button id="startBtn">Start Search</button>
+            <button id="resetBtn">Reset</button>
+            <div class="speed-control">
+                <label for="speedSlider">Speed:</label>
+                <input type="range" id="speedSlider" min="10" max="1000" value="500">
+            </div>
+        </div>
+        
+        <div class="visualization-area">
+            <div class="puzzle-container">
+                <h2>Current State</h2>
+                <div id="currentPuzzle" class="puzzle-grid"></div>
+                <div class="state-info">
+                    <p>Depth: <span id="currentDepth">0</span></p>
+                    <p>Heuristic: <span id="currentHeuristic">0</span></p>
+                </div>
+            </div>
+            
+            <div class="search-info">
+                <h2>Search Statistics</h2>
+                <p>Nodes Explored: <span id="nodesExplored">0</span></p>
+                <p>Nodes Pruned: <span id="nodesPruned">0</span></p>
+                <p>Current Alpha: <span id="currentAlpha">-∞</span></p>
+                <p>Current Beta: <span id="currentBeta">∞</span></p>
+            </div>
+        </div>
+        
+        <div class="search-tree">
+            <h2>Search Tree</h2>
+            <div id="treeVisualization" class="tree-container"></div>
+        </div>
+        
+        <div class="explanation">
+            <h2>Alpha-Beta Pruning Explanation</h2>
+            <p>Alpha-Beta pruning is an optimization technique for the minimax algorithm that reduces the number of nodes evaluated in the search tree.</p>
+            <ul>
+                <li><strong>Alpha:</strong> Best value for the maximizer found so far</li>
+                <li><strong>Beta:</strong> Best value for the minimizer found so far</li>
+                <li><strong>Pruning:</strong> Skip evaluating moves when we've found evidence that they're worse than a previously examined move</li>
+            </ul>
+            <p>In this 8-puzzle implementation:</p>
+            <ul>
+                <li>We use Manhattan distance as the heuristic</li>
+                <li>The goal is to minimize the number of moves to reach the target state</li>
+                <li>Green nodes are being explored</li>
+                <li>Red nodes are pruned</li>
+                <li>Blue nodes are part of the optimal solution path</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
